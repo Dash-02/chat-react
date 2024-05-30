@@ -6,15 +6,22 @@ function Chat() {
     const [message, setMessage] = useState('');
     const [room, setRoom] = useState('');
     const [messages, setMessages] = useState([]);
-
     const messageInputRef = useRef(null);
     const roomInputRef = useRef(null);
 
     useEffect(() => {
-        const newSocket = io('http://localhost:3000');
-        
+        const newSocket = io('http://localhost:3000/user', {
+            auth: {
+                token: "test"
+            }
+        });
+
         newSocket.on('connect', () => {
             displayMessage(`You connected with id: ${newSocket.id}`);
+        });
+
+        newSocket.on('connect_error', error => {
+            displayMessage(`Connection error: ${error.message}`);
         });
 
         newSocket.on('receive-message', (message) => {
@@ -37,7 +44,7 @@ function Chat() {
 
         if (message === '') return;
 
-        displayMessage(message);
+        displayMessage(`You: ${message}`);
 
         if (socket) {
             socket.emit('send-message', message, room);
@@ -80,7 +87,7 @@ function Chat() {
             <div>
                 <span>Room</span>
                 <input type="text" id="room-input" ref={roomInputRef} />
-                <button onClick={handleJoinRoom}>Join</button>
+                <button type="button" onClick={handleJoinRoom}>Join</button>
             </div>
         </div>
     );
